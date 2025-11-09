@@ -1,72 +1,87 @@
 package com.github.diogenes.bighouse.api.controller;
 
 
+import com.github.diogenes.bighouse.api.build.AssemblerIdoloResponse;
+import com.github.diogenes.bighouse.api.controller.response.IdoloResponse;
 import com.github.diogenes.bighouse.api.model.Idolo;
 import com.github.diogenes.bighouse.api.service.IdoloService;
+import com.github.diogenes.bighouse.api.service.storage.S3StorageService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.io.InputStream;
+import java.util.List;
 
-import static org.springframework.http.MediaType.IMAGE_PNG;
 
+/**
+ * @author DiogenesSantos
+ * Classe controller para requisições da api-rest Cliente-serve.
+ *
+ */
+
+
+
+@Slf4j
 @RestController
 public class IdoloController {
 
-    @Autowired
-    private IdoloService service;
+    private IdoloService idoloService;
+    private S3StorageService storageService;
 
-
-    @GetMapping
-    public ResponseEntity<?> buscarTodas() throws IOException {
-
-
-        return ResponseEntity.ok().body("Salvo");
+    public IdoloController(@Autowired IdoloService idoloService, @Autowired S3StorageService storageService) {
+        this.idoloService = idoloService;
+        this.storageService = storageService;
     }
 
 
-    @GetMapping(value = "/buscar-foto/{id}" , produces = MediaType.IMAGE_PNG_VALUE)
-    public ResponseEntity<?> buscarFoto(@PathVariable ("id") Long id) {
-        Idolo IdoloLocalizado = service.buscarPorId(id);
 
-        return ResponseEntity.ok()
-                .contentType(IMAGE_PNG)
-                .body(IdoloLocalizado.getImage());
+    @GetMapping
+    public ResponseEntity<List<IdoloResponse>> buscarTodos() {
+        List<Idolo> idolos = idoloService.buscarTodos();
+        List<IdoloResponse> idoloResponses = AssemblerIdoloResponse.listModelToListResponse(idolos);
+        return ResponseEntity.ok().body(idoloResponses);
+    }
+
+
+
+    @GetMapping(value = "/{id}")
+    public ResponseEntity<IdoloResponse> buscarFoto(@PathVariable ("id") Long id) {
+        Idolo idoloLocalizado = idoloService.buscarPorId(id);
+        IdoloResponse idoloResponse = AssemblerIdoloResponse.modelToResponse(idoloLocalizado);
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(idoloResponse);
     }
 
 
 
     @PostMapping
-    public ResponseEntity<?> salvar(@RequestBody Idolo idolo) {
-        Idolo idoloSalvo = service.salvar(idolo);
-        return ResponseEntity.ok(idoloSalvo);
+    public ResponseEntity<IdoloResponse> salvar(@RequestParam(value = "frase" , required = true) String frase ,
+                                    @RequestParam(value = "foto", required = true) MultipartFile foto) throws IOException {
+        var urlPublicFoto = storageService.armazenar(foto);
+        var idolo = instancieIdolo(frase , urlPublicFoto);
+        var idoloSalvoNoBD = idoloService.salvar(idolo);
+        var IdoloResponse = AssemblerIdoloResponse.modelToResponse(idoloSalvoNoBD);
+
+        return ResponseEntity.ok().body(IdoloResponse);
     }
 
 
-    @PostMapping("/salva-postman")
-    public ResponseEntity<?> salvarPostman(String frase ,
-                                           @RequestParam(value = "file", required = false) MultipartFile file) throws IOException {
-        var idolo = instancieIdolo(frase, file);
-        service.salvar(idolo);
 
-        return ResponseEntity.ok().body(idolo);
-    }
 
 
     /**
      *
      * @param frase frase impactante do idolo para ser persistida no banco de dados
-     * @param file é imagen, não e obrigatório
      * @return retornado um objeto de idolo
      * @throws IOException ao trabalhar com Input e Output somos obrigados a tratar exception.
      */
-    private static Idolo instancieIdolo(String frase, MultipartFile file) throws IOException {
+    private static Idolo instancieIdolo(String frase, String caminho) throws IOException {
         return new Idolo.builder().setFrase(frase)
-                .setImage(file == null ? null : file.getBytes())
+                .setImage(caminho)
                 .build();
     }
 

@@ -2,12 +2,15 @@ package com.github.diogenes.bighouse.api.model;
 
 
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDate;
-import java.util.Arrays;
 import java.util.Objects;
 
+@Getter
+@Setter
 @Entity
 @Table(name = "tb_idolo")
 public class Idolo {
@@ -19,73 +22,40 @@ public class Idolo {
 
     private String frase;
 
-    @Lob
-    @Column(name = "image", columnDefinition = "MEDIUMBLOB")
-    private byte[] image;
-
+    @Column(name = "image_url")
+    private String imageUrl;
 
     @DateTimeFormat(pattern = "dd/MM/yyyy")
+    @Column(name = "data_criacao")
     private LocalDate data = LocalDate.now();
 
-
     private Idolo(){}
-
-
-    private Idolo(String frase , byte [] image) {
+    public Idolo(String frase, String imageUrl) {
         this.frase = frase;
-        this.image = image;
+        this.imageUrl = imageUrl;
     }
-
 
     @Override
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;
 
         Idolo idolo = (Idolo) o;
-        return Objects.equals(id, idolo.id) && Objects.equals(frase, idolo.frase) && Arrays.equals(image, idolo.image) && Objects.equals(data, idolo.data);
+        return Objects.equals(id, idolo.id) && Objects.equals(frase, idolo.frase) && Objects.equals(imageUrl, idolo.imageUrl) && Objects.equals(data, idolo.data);
     }
 
     @Override
     public int hashCode() {
         int result = Objects.hashCode(id);
         result = 31 * result + Objects.hashCode(frase);
-        result = 31 * result + Arrays.hashCode(image);
+        result = 31 * result + Objects.hashCode(imageUrl);
         result = 31 * result + Objects.hashCode(data);
         return result;
-    }
-
-
-    @Override
-    public String toString() {
-        return "Idolo{" +
-                "id=" + id +
-                ", frase='" + frase + '\'' +
-                ", image=" + Arrays.toString(image) +
-                ", data=" + data +
-                '}';
-    }
-
-
-    public Long getId() {
-        return id;
-    }
-
-    public String getFrase() {
-        return frase;
-    }
-
-    public byte[] getImage() {
-        return image;
-    }
-
-    public LocalDate getData() {
-        return data;
     }
 
     public static class builder {
 
         private String frase;
-        private byte[] image;
+        private String image;
         private LocalDate data = LocalDate.now();
 
 
@@ -94,7 +64,7 @@ public class Idolo {
            return this;
         }
 
-        public Idolo.builder setImage(byte[] image) {
+        public Idolo.builder setImage(String image) {
             this.image = image;
             return this;
         }
