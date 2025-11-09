@@ -1,6 +1,7 @@
 package com.github.diogenes.bighouse.api.service.storage;
 
 import com.github.diogenes.bighouse.api.core.storage.StorageProperties;
+import com.github.diogenes.bighouse.api.model.Idolo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -66,6 +67,15 @@ public class S3StorageService {
         s3Client.deleteObject(deleteObjectRequest);
 
     }
+
+
+    public void atualizar(Idolo idolo , MultipartFile fotoNova) throws IOException {
+        deletar(idolo.retornaNomeImage());
+        String fotoArmazenada = armazenar(fotoNova);
+        idolo.setImageUrl(fotoArmazenada);
+
+    }
+
 
 
 

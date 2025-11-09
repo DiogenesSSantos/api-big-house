@@ -52,6 +52,23 @@ public class Idolo {
         return result;
     }
 
+
+    /**
+     * o retorno desse métôdo  String formatada sem URLPublica, exemplo
+     * https://---.----.---/fotos/8a18831a-be86-49bc-a28f-bfb6f274de6f_nome_foto.png vai trazer apenas nome da foto
+     * para uso posterior no S3 da amazon.
+     * @return  8a18831a-be86-49bc-a28f-bfb6f274de6f_nomme_foto.png
+     *
+     */
+    public String retornaNomeImage(){
+        int posicaoUltimaBarra = this.getImageUrl().lastIndexOf("/");
+        String caminhoImage = this.getImageUrl().substring(posicaoUltimaBarra + 1);
+        return caminhoImage;
+    }
+
+
+
+
     public static class builder {
 
         private String frase;

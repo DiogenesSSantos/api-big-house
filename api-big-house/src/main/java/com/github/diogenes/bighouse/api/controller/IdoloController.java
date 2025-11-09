@@ -70,6 +70,36 @@ public class IdoloController {
     }
 
 
+    @PutMapping("/{id}")
+    public ResponseEntity<IdoloResponse> atualizar(@PathVariable("id") Long id , @RequestParam(value = "fotoNova" ,
+            required = true) MultipartFile fotoNova) throws IOException {
+
+        Idolo idoloLocaliado = idoloService.buscarPorId(id);
+        storageService.atualizar(idoloLocaliado , fotoNova);
+        idoloService.atualizar(idoloLocaliado);
+
+        IdoloResponse idoloResponse = AssemblerIdoloResponse.modelToResponse(idoloLocaliado);
+
+
+        return ResponseEntity.ok().body(idoloResponse);
+    }
+
+
+
+
+
+
+    @DeleteMapping("{id}")
+    public ResponseEntity<?> deletar(@PathVariable("id") Long id){
+        Idolo idoloLocalizado = idoloService.buscarPorId(id);
+        storageService.deletar(idoloLocalizado.retornaNomeImage());
+        idoloService.deletar(idoloLocalizado);
+
+        return ResponseEntity.noContent().build();
+    }
+
+
+
 
 
 

@@ -20,10 +20,22 @@ public class IdoloService {
         return idoloRepository.save(idolo);
     }
 
+
     @Transactional
+    public void deletar(Idolo idolo) {
+        idoloRepository.delete(idolo);
+    }
+
     public Idolo buscarPorId(Long id) {
         return idoloRepository.findById(id).get();
     }
+
+
+    @Transactional
+    public void atualizar(Idolo idolo){
+        salvar(idolo);
+    }
+
 
     public List<Idolo> buscarTodos() {
         return idoloRepository.findAll();
